@@ -1,28 +1,31 @@
 #include "Renderer.h"
+#include "Random.h"
+#include "Canvas.h"
+
 #include <iostream>
 
 
-int main(int argc, char** argv) {
-	std::cout << "Hello world!\n";
+int main()
+{
+    nc::Renderer renderer(400, 300);
+    nc::Canvas canvas(400, 300, renderer);
 
-	nc::Renderer renderer;
-	if (!renderer.Initialize() || !renderer.CreateWindow()) {
-		return 1;
-	}
+    while (true)
+    {
+        canvas.Clear({ 0, 0, 0, 1 });
 
-	bool quit = false;
-	while (!quit) {
-		SDL_Event event;
-		SDL_PollEvent(&event);
-		switch (event.type) {
-		case SDL_QUIT:
-			quit = true;
-			break;
-		}
-	}
+        for (int i = 0; i < 1000; i++)
+        {
+            glm::ivec2 point = { random(0, 399), random(0, 299) };
+            color4_t color = { random01(), random01(), random01(), 1 };
+            canvas.DrawPoint(point, color);
+        }
 
-	renderer.Shutdown();
+        canvas.Update();
 
-	return 0;
+        renderer.PresentCanvas(canvas);
+    }
+
+    return 0;
 }
 
