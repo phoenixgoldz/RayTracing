@@ -44,3 +44,4 @@ inline glm::vec3 RandomInUnitSphere()
         2.0f * random01() - 1.0f
     ));
 }
+

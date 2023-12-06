@@ -36,6 +36,18 @@
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CornellBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -43,9 +55,6 @@
     </ClInclude>
     <ClInclude Include="Ray.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Color.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Random.h">
       <Filter>Source Files</Filter>
@@ -69,6 +78,27 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Sphere.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Emissive.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dielectric.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CornellBox.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

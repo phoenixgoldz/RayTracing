@@ -1,32 +1,70 @@
 #include "Material.h"
+#include "Random.h"
+#include <algorithm>
+#include <SDL_stdinc.h>
 
-bool Lambertian::Scatter(const ray_t& ray, const raycastHit_t& raycastHit, color3_t& color, ray_t& scattered) const
-{
-    glm::vec3 target = raycastHit.point + raycastHit.normal + RandomInUnitSphere();
-    glm::vec3 direction = glm::normalize(target - raycastHit.point);
+float reflectance(float cosine, float refractionRatio) {
+	// Schlick's approximation for reflectance
+	float r0 = (1 - refractionRatio) / (1 + refractionRatio);
+	r0 = r0 * r0;
+	return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+glm::vec3 randomUnitVector() {
+	float theta = 2.0f * static_cast<float>(M_PI) * random01();
+	float phi = acos(2.0f * random01() - 1.0f);
 
-    scattered = ray_t(raycastHit.point, direction);
-    color = albedo_ * CalculateGradientColor(raycastHit.distance);
+	float x = sin(phi) * cos(theta);
+	float y = sin(phi) * sin(theta);
+	float z = cos(phi);
 
-    return true;
+	return glm::vec3(x, y, z);
+}
+bool Lambertian::Scatter(const ray_t& ray, const raycastHit_t& hit, color3_t& attenuation, ray_t& scattered) const {
+	glm::vec3 scatterDirection = hit.normal + randomUnitVector();
+
+	// Catch degenerate scatter direction
+	if (glm::length(scatterDirection) < 1e-8) {
+		scatterDirection = hit.normal;
+	}
+
+	scattered = ray_t(hit.point, scatterDirection);
+	attenuation = m_albedo;
+	return true;
 }
 
-color3_t Lambertian::CalculateGradientColor(float distance) const
-{
-    float t = distance / maxDistance_;
-    t = glm::smoothstep(0.0f, 1.0f, t);
-    return lerp(color3_t{ 0, 0, 1 }, color3_t{ 0, 0, 0 }, t);
+bool Metal::Scatter(const ray_t& ray, const raycastHit_t& hit, color3_t& attenuation, ray_t& scattered) const {
+	glm::vec3 reflected = glm::reflect(glm::normalize(ray.direction), hit.normal);
+	scattered = ray_t(hit.point, reflected + m_fuzziness * RandomInUnitSphere());
+	attenuation = m_albedo;
+
+	return glm::dot(scattered.direction, hit.normal) > 0;
 }
 
-bool Metal::Scatter(const ray_t& ray, const raycastHit_t& raycastHit, color3_t& color, ray_t& scattered) const
-{
-    glm::vec3 reflected = reflect(glm::normalize(ray.direction), raycastHit.normal);
+bool Dielectric::Scatter(const ray_t& ray, const raycastHit_t& hit, color3_t& attenuation, ray_t& scattered) const {
+	attenuation = m_albedo;
+	float refractionRatio = hit.material == this ? (1.0f / m_refractionIndex) : m_refractionIndex;
 
-    // set scattered ray from reflected ray + random point in sphere (fuzz = 0 no randomness, fuzz = 1 random reflected)
-    // a mirror has a fuzz value of 0 and a diffused metal surface a higher value
-    scattered = ray_t(raycastHit.point, reflected + m_fuzz * RandomInUnitSphere());
-    color = m_albedo;
+	glm::vec3 unitDirection = glm::normalize(ray.direction);
 
-    // make sure that reflected ray is going away from surface normal (dot product > 0, angle between vectors < 90 degrees)
-    return glm::dot(scattered.direction, raycastHit.normal) > 0;
+	float cosTheta = std::min(glm::dot(-unitDirection, hit.normal), 1.0f);
+	float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+
+	bool cannotRefract = refractionRatio * sinTheta > 1.0f;
+
+	glm::vec3 direction;
+
+	if (cannotRefract || reflectance(cosTheta, refractionRatio) > random01()) {
+		direction = glm::reflect(unitDirection, hit.normal);
+	}
+	else {
+		direction = glm::refract(unitDirection, hit.normal, refractionRatio);
+	}
+
+	scattered = ray_t(hit.point, direction);
+	return true;
+}
+
+bool Emissive::Scatter(const ray_t& ray, const raycastHit_t& hit, color3_t& attenuation, ray_t& scattered) const {
+	// Emissive materials don't scatter, they emit light
+	return false;
 }
